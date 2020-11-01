@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #root{
+            border:1px solid red;
+            height:20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+       var historyObj = window.history;
+       //监听路径改变事件 表示将当前的状态变更了，弹出了
+     /*   window.onpushstate = (event)=>{
+        console.log(event);
+        root.innerHTML = window.location.pathname;
+       }  */
+       window.addEventListener('pushstate',(event)=>{
+        console.log(event);
+        root.innerHTML = event.detail.pathname;
+       } );
+       window.addEventListener('popstate',(event)=>{
+        console.log(event);
+        root.innerHTML = window.location.pathname;
+       } );
+       class PushStateEvent{
+        constructor(state,pathname,type){
+            this.state = state;
+            this.pathname = pathname;
+            this.type = type;
+        }
+       }
+       (function (historyObj){
+          let oldPushState = history.pushState;//缓存原生的pushState
+          historyObj.pushState = function(state,title,pathname){
+            let result = oldPushState.apply(history,arguments);
+           /*  if(typeof window.onpushstate === 'function'){
+                window.onpushstate(new PushStateEvent(state,pathname,'pushstate'));
+            } */
+            window.dispatchEvent(new CustomEvent('pushstate',{detail:{pathname,state}}));
+            return result;
+          } 
+       })(historyObj);
+       setTimeout(()=>{
+        historyObj.pushState({page:1},{title:'page1'},'/page1');
+       },1000);
+       setTimeout(()=>{
+        historyObj.pushState({page:2},{title:'page2'},'/page2');
+       },2000);
+       setTimeout(()=>{
+        historyObj.pushState({page:3},{title:'page3'},'/page3');
+       },3000);
+       setTimeout(()=>{
+        historyObj.back();//historyObj.go(-1);
+       },4000);
+       setTimeout(()=>{
+        historyObj.go(1);
+       },5000);
+    </script>
+</body>
+</html>
